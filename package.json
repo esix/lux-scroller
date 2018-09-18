@@ -1,0 +1,26 @@
+{
+  "name": "lux-scroller",
+  "version": "0.0.1",
+  "description": "Pure scroller",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "esix <esix@live.ru>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/luxms/lux-scroller"
+  },
+  "license": "MIT",
+  "keywords": [
+    "scroller",
+    "animation",
+    "mobile"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "typescript": "^3.0.3"
+  }
+}

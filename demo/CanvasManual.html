@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>lux-scroll demo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+  <style>
+    body {
+      background-color: #cccccc;
+      text-align: center;
+      padding-top: 50px;  
+    }
+
+    #canvas {
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="canvas" width="500" height="500" ></canvas>
+
+  <script>
+    require(['../dist/index'], function (scroller) {
+      var scrollController = new scroller.ScrollController({
+        containerWidth: 500,
+        containerHeight: 500,
+        contentWidth: 2500,
+        contentHeight: 2500,
+      });
+
+      var canvas = document.getElementById('canvas');
+
+      // install events
+      canvas.addEventListener('mousedown', function (event) {
+        scrollController.onTouchStart(event.offsetX, event.offsetY);
+      });
+      canvas.addEventListener('mousemove', function (event) {
+        if (event.buttons && 1) {
+          scrollController.onTouchMove(event.offsetX, event.offsetY);
+        } else {
+          scrollController.onTouchEnd(event.offsetX, event.offsetY);
+        }
+      });
+
+
+      // render squares
+      var ctx = canvas.getContext('2d');
+
+      function renderSquare(j, i, x, y, zoom, isFirst, isLast) {
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+        ctx.moveTo(x + 98, y);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x, y + 98);
+        ctx.strokeStyle = '#cccccc';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x + 10, y);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x, y + 10);
+        ctx.strokeStyle = (isFirst || isLast) ? '#ff0000' : '#000000';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x + 88, y + 98);
+        ctx.lineTo(x + 98, y + 98);
+        ctx.lineTo(x + 98, y + 88);
+        ctx.strokeStyle = (isFirst || isLast) ? '#ff0000' : '#000000';
+        ctx.stroke();
+
+        ctx.font = "10px Arial";
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'hanging';
+        ctx.strokeStyle = '#000000';
+        ctx.strokeText('(' + j + ', ' + i + ')', x + 10, y + 10);
+      }
+
+      function redraw(pos) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // find squares to draw:        
+        var iMin = Math.max(0, Math.floor(pos.top / 100));                    // min visible y-index
+        var iMax = Math.min(25, Math.ceil((pos.top + pos.height) / 100));     // max visible y-index (first invisible)
+        var jMin = Math.max(0, Math.floor(pos.left / 100));                   // min visible x-index
+        var jMax = Math.min(25, Math.ceil((pos.left + pos.width) / 100));     // max visible x-index (first invisible)
+
+        for(var i = iMin; i < iMax; i++) {
+          for(var j = jMin; j < jMax; j++) {
+            var y = i * 100 - pos.top;
+            var x = j * 100 - pos.left;
+            var isFirst = (i === iMin && j === jMin);
+            var isLast = (i === iMax - 1 && j === jMax - 1);
+            renderSquare(j, i, x, y, 1, isFirst, isLast);
+          }
+        }
+      }
+
+      // update position
+      var prevPos = null;
+      window.setInterval(function() {
+        var pos = scrollController.getPosition();
+
+        if (prevPos !== pos) {
+          prevPos = pos;
+          redraw(pos);
+        }
+      }, 25);
+
+
+    });
+  </script>
+</body>
+</html>
