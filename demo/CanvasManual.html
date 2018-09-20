@@ -17,22 +17,25 @@
 </head>
 <body>
 
-  <canvas id="canvas" width="500" height="500" ></canvas>
+  <canvas id="canvas" width="490" height="490" ></canvas>
 
   <script>
     require(['../dist/index'], function (scroller) {
+      var canvas = document.getElementById('canvas');
+
       var scrollController = new scroller.ScrollController({
-        containerWidth: 500,
-        containerHeight: 500,
+        containerWidth: canvas.width,
+        containerHeight: canvas.height,
         contentWidth: 2500,
         contentHeight: 2500,
       });
 
-      var canvas = document.getElementById('canvas');
-
       // install events
       canvas.addEventListener('mousedown', function (event) {
         scrollController.onTouchStart(event.offsetX, event.offsetY);
+      });
+      canvas.addEventListener('mouseout', function (event) {
+        scrollController.onTouchEnd(event.offsetX, event.offsetY);
       });
       canvas.addEventListener('mousemove', function (event) {
         if (event.buttons && 1) {

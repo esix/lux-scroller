@@ -1,6 +1,12 @@
 import { IScrollerOptions } from './IScrollerOptions';
 
 
+interface IVector {
+  x: number;
+  y: number;
+}
+
+
 export interface IPosition {
   isMoving: boolean;
   left: number;
@@ -31,8 +37,6 @@ export class ScrollController {
   private _pos:  IPosition;
   private _lastTs: number;
 
-  private _touchX: number = 0;
-  private _touchY: number = 0;
   private _touchInnerX: number = 0;
   private _touchInnerY: number = 0;
   private _isTouch: boolean = false;
@@ -67,20 +71,17 @@ export class ScrollController {
   }
 
   public onTouchStart(containerX: number, containerY: number): void {
-    console.log('onTouchStart');
+    const {x, y} = this._innerFromContainer({x: containerX, y: containerY});
+    console.log('onTouchStart ', containerX, containerY, 'inner ', x, y);
     this._isTouch = true;
-    this._touchX = containerX;
-    this._touchY = containerX;
-    this._touchInnerX = this._pos.left + containerX;
-    this._touchInnerY = this._pos.top + containerY;
+    this._touchInnerX = x;
+    this._touchInnerY = y;
   }
 
   public onTouchMove(containerX: number, containerY: number): void {
     if (this._isTouch) {
-      const dx = containerX - this._touchX;
-      const dy = containerY - this._touchY;
-      this._x = this._touchInnerX - dx;
-      this._y = this._touchInnerY - dy;
+      this._x = this._touchInnerX - containerX;
+      this._y = this._touchInnerY - containerY;
     }
   }
 
@@ -95,6 +96,15 @@ export class ScrollController {
   
   private _updatePosition() {
     const ts: number = new Date().valueOf();
-    this._pos = createPosition(this._x, this._y, this._containerWidth, this._contentHeight);
+    const newPos = createPosition(this._x, this._y, this._containerWidth, this._contentHeight);
+    if (newPos.left !== this._pos.left || newPos.top !== this._pos.top) {
+      this._pos = newPos;
+    }
+  }
+
+  private _innerFromContainer({x, y}: IVector): IVector {
+    x = this._pos.left + x;
+    y = this._pos.top + y;
+    return {x, y};
   }
 }

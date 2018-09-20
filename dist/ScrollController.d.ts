@@ -15,8 +15,6 @@ export declare class ScrollController {
     private _vy;
     private _pos;
     private _lastTs;
-    private _touchX;
-    private _touchY;
     private _touchInnerX;
     private _touchInnerY;
     private _isTouch;
@@ -28,4 +26,5 @@ export declare class ScrollController {
     onTouchMove(containerX: number, containerY: number): void;
     onTouchEnd(containerX: number, containerY: number): void;
     private _updatePosition();
+    private _innerFromContainer({x, y});
 }

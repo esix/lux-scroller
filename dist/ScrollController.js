@@ -20,8 +20,6 @@
     }
     var ScrollController = /** @class */ (function () {
         function ScrollController(options) {
-            this._touchX = 0;
-            this._touchY = 0;
             this._touchInnerX = 0;
             this._touchInnerY = 0;
             this._isTouch = false;
@@ -47,19 +45,16 @@
             //
         };
         ScrollController.prototype.onTouchStart = function (containerX, containerY) {
-            console.log('onTouchStart');
+            var _a = this._innerFromContainer({ x: containerX, y: containerY }), x = _a.x, y = _a.y;
+            console.log('onTouchStart ', containerX, containerY, 'inner ', x, y);
             this._isTouch = true;
-            this._touchX = containerX;
-            this._touchY = containerX;
-            this._touchInnerX = this._pos.left + containerX;
-            this._touchInnerY = this._pos.top + containerY;
+            this._touchInnerX = x;
+            this._touchInnerY = y;
         };
         ScrollController.prototype.onTouchMove = function (containerX, containerY) {
             if (this._isTouch) {
-                var dx = containerX - this._touchX;
-                var dy = containerY - this._touchY;
-                this._x = this._touchInnerX - dx;
-                this._y = this._touchInnerY - dy;
+                this._x = this._touchInnerX - containerX;
+                this._y = this._touchInnerY - containerY;
             }
         };
         ScrollController.prototype.onTouchEnd = function (containerX, containerY) {
@@ -71,7 +66,16 @@
         // private section
         ScrollController.prototype._updatePosition = function () {
             var ts = new Date().valueOf();
-            this._pos = createPosition(this._x, this._y, this._containerWidth, this._contentHeight);
+            var newPos = createPosition(this._x, this._y, this._containerWidth, this._contentHeight);
+            if (newPos.left !== this._pos.left || newPos.top !== this._pos.top) {
+                this._pos = newPos;
+            }
+        };
+        ScrollController.prototype._innerFromContainer = function (_a) {
+            var x = _a.x, y = _a.y;
+            x = this._pos.left + x;
+            y = this._pos.top + y;
+            return { x: x, y: y };
         };
         return ScrollController;
     }());
