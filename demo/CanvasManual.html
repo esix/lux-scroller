@@ -37,6 +37,13 @@
       canvas.addEventListener('mouseout', function (event) {
         scrollController.onTouchEnd(event.offsetX, event.offsetY);
       });
+      canvas.addEventListener('wheel', function (event) {
+        if (event.deltaY > 0) {
+          scrollController.onZoomIn(event.deltaY, event.offsetX, event.offsetY);
+        } else if (event.deltaY < 0) {
+          scrollController.onZoomOut(-event.deltaY, event.offsetX, event.offsetY);
+        }
+      });
       canvas.addEventListener('mousemove', function (event) {
         if (event.buttons && 1) {
           scrollController.onTouchMove(event.offsetX, event.offsetY);
@@ -49,27 +56,29 @@
       // render squares
       var ctx = canvas.getContext('2d');
 
-      function renderSquare(j, i, x, y, zoom, isFirst, isLast) {
+      function renderSquare(j, i, x, y, zoomX, zoomY, isFirst, isLast) {
         ctx.lineWidth = 1;
+        var width = 100 * zoomX;
+        var height = 100 * zoomY;
 
         ctx.beginPath();
-        ctx.moveTo(x + 98, y);
+        ctx.moveTo(x + width - 2, y);
         ctx.lineTo(x, y);
-        ctx.lineTo(x, y + 98);
+        ctx.lineTo(x, y + height - 2);
         ctx.strokeStyle = '#cccccc';
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.moveTo(x + 10, y);
+        ctx.moveTo(x + width / 10, y);
         ctx.lineTo(x, y);
-        ctx.lineTo(x, y + 10);
+        ctx.lineTo(x, y + height / 10);
         ctx.strokeStyle = (isFirst || isLast) ? '#ff0000' : '#000000';
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.moveTo(x + 88, y + 98);
-        ctx.lineTo(x + 98, y + 98);
-        ctx.lineTo(x + 98, y + 88);
+        ctx.moveTo(x + width * 0.9, y + height - 1);
+        ctx.lineTo(x + width - 1, y + height - 1);
+        ctx.lineTo(x + width - 1, y + height * 0.9);
         ctx.strokeStyle = (isFirst || isLast) ? '#ff0000' : '#000000';
         ctx.stroke();
 
@@ -82,20 +91,24 @@
 
       function redraw(pos) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var zoomX = pos.zoomX;
+        var zoomY = pos.zoomY;
+        var width = 100 * zoomX;
+        var height = 100 * zoomY;
 
         // find squares to draw:        
-        var iMin = Math.max(0, Math.floor(pos.top / 100));                    // min visible y-index
-        var iMax = Math.min(25, Math.ceil((pos.top + pos.height) / 100));     // max visible y-index (first invisible)
-        var jMin = Math.max(0, Math.floor(pos.left / 100));                   // min visible x-index
-        var jMax = Math.min(25, Math.ceil((pos.left + pos.width) / 100));     // max visible x-index (first invisible)
+        var iMin = Math.max(0, Math.floor(pos.top / width));                    // min visible y-index
+        var iMax = Math.min(25, Math.ceil((pos.top + pos.height) / width));     // max visible y-index (first invisible)
+        var jMin = Math.max(0, Math.floor(pos.left / height));                  // min visible x-index
+        var jMax = Math.min(25, Math.ceil((pos.left + pos.width) / height));    // max visible x-index (first invisible)
 
         for(var i = iMin; i < iMax; i++) {
           for(var j = jMin; j < jMax; j++) {
-            var y = i * 100 - pos.top;
-            var x = j * 100 - pos.left;
+            var y = i * width - pos.top;
+            var x = j * height - pos.left;
             var isFirst = (i === iMin && j === jMin);
             var isLast = (i === iMax - 1 && j === jMax - 1);
-            renderSquare(j, i, x, y, 1, isFirst, isLast);
+            renderSquare(j, i, x, y, zoomX, zoomY, isFirst, isLast);
           }
         }
       }
@@ -109,7 +122,7 @@
           prevPos = pos;
           redraw(pos);
         }
-      }, 25);
+      }, 55);
 
 
     });
