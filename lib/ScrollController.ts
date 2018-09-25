@@ -99,7 +99,7 @@ export class ScrollController {
     if (this._touch) {
       const outerPos = new Vec2(containerX, containerY);
       const innerPos = this._innerFromContainer(outerPos);
-      this._center = this._touch.sub(outerPos.hadamard(this._zoom.inv()));
+      this._center = this._touch.sub(outerPos.sub(this._containerSize.div2()).hadamard(this._zoom.inv()))
     }
   }
 

@@ -103,6 +103,9 @@
         Vec2.clone = function (v) {
             return new Vec2(v.x, v.y);
         };
+        Vec2.make = function (x, y) {
+            return new Vec2(x, y);
+        };
         return Vec2;
     }());
     exports.Vec2 = Vec2;

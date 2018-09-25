@@ -126,4 +126,7 @@ export class Vec2 implements IVec2 {
     return new Vec2(v.x, v.y);
   }
 
+  public static make(x: number, y: number): Vec2 {
+    return new Vec2(x, y);
+  }
 }

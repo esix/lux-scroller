@@ -35,4 +35,5 @@ export declare class Vec2 implements IVec2 {
     static unit(v: IVec2): Vec2;
     static a(v: IVec2): number;
     static clone(v: IVec2): Vec2;
+    static make(x: number, y: number): Vec2;
 }

@@ -62,7 +62,7 @@
             if (this._touch) {
                 var outerPos = new Vec2_1.Vec2(containerX, containerY);
                 var innerPos = this._innerFromContainer(outerPos);
-                this._center = this._touch.sub(outerPos.hadamard(this._zoom.inv()));
+                this._center = this._touch.sub(outerPos.sub(this._containerSize.div2()).hadamard(this._zoom.inv()));
             }
         };
         ScrollController.prototype.onTouchEnd = function (containerX, containerY) {
