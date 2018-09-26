@@ -1,4 +1,4 @@
-# lux-scroller
+# Scrollnik
 
 Logic for scrolling and zooming. 
 
