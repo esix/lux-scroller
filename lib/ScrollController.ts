@@ -1,55 +1,77 @@
 import { IScrollerOptions } from './IScrollerOptions';
+import { IVec2, Vec2 } from './Vec2'
+
 
 
 export interface IPosition {
+  // public
   isMoving: boolean;
+  zoomX: number;
+  zoomY: number;
+  width: number;
+  height: number;
   left: number;
   top: number;
+  // right: number;
+  // bottom: number;
+  // internal
+  containerSize: IVec2;           // container size
+  viewportSize: IVec2;            // viewport size
+  zoom: IVec2;                    // zoom
+  center: IVec2;                  // center
+  lx: number;                     // left x
+  ty: number;                     // top y
+  rx: number;                     // right x
+  by: number;                     // bottom y
 }
 
 
-function createPosition(contentLeft: number, contentTop: number, containerWidth: number, containerHeight: number) {
+function createPosition(center: Vec2, zoom: Vec2, containerSize: Vec2): IPosition {
+  const viewportSize: Vec2 = containerSize.hadamard(zoom.inv());
+  const lt: Vec2 = center.sub(viewportSize.div(2));
+  const rb: Vec2 = lt.add(viewportSize);
+
   return Object.freeze({
     isMoving: false,
-    left: contentLeft,
-    top: contentTop,
-    width: containerWidth,
-    height: containerHeight,
+    zoomX: zoom.x,
+    zoomY: zoom.y,
+    width: viewportSize.x,
+    height: viewportSize.y,
+    left: lt.x,
+    top: lt.y,
+    // 
+    containerSize, viewportSize, zoom, center, 
+    lx: lt.x, 
+    ty: lt.y,
+    rx: rb.x,
+    by: rb.y,
   });
 }
 
 
 export class ScrollController {
-  private _containerWidth: number;
-  private _containerHeight: number;
-  private _contentWidth: number;
-  private _contentHeight: number;
-  private _x: number;
-  private _y: number;
-  private _vx: number;
-  private _vy: number;
+  private _containerSize: Vec2;
+  private _innerSize: Vec2;
+  private _center: Vec2;
+  private _zoom: Vec2;
+  private _v: Vec2;
   private _pos:  IPosition;
   private _lastTs: number;
 
-  private _touchX: number = 0;
-  private _touchY: number = 0;
-  private _touchInnerX: number = 0;
-  private _touchInnerY: number = 0;
-  private _isTouch: boolean = false;
+  private _touch: Vec2 | null = null;
 
   public constructor(options: IScrollerOptions) {
-    this._containerWidth = options.containerWidth;
-    this._containerHeight = options.containerHeight;
-    this._contentWidth = (typeof options.contentWidth === 'number') ? options.contentWidth : this._containerWidth;
-    this._contentHeight = (typeof options.contentHeight === 'number') ? options.contentHeight : this._containerHeight;
+    this._containerSize = new Vec2(options.containerWidth, options.containerHeight);
+    this._innerSize = new Vec2((typeof options.contentWidth === 'number') ? options.contentWidth : this._containerSize.x,
+                               (typeof options.contentHeight === 'number') ? options.contentHeight : this._containerSize.y)
 
-    this._x = (typeof options.initialX === 'number') ? options.initialX : 0;
-    this._y = (typeof options.initialY === 'number') ? options.initialY : 0;
+    const lt = new Vec2((typeof options.initialX === 'number') ? options.initialX : 0, (typeof options.initialY === 'number') ? options.initialY : 0);
+    this._center = lt.add(this._containerSize.div(2));
 
-    this._vx = 0;
-    this._vy = 0;
+    this._zoom = new Vec2(1, 1);
+    this._v = new Vec2(0, 0);
 
-    this._pos = createPosition(this._x, this._y, this._containerWidth, this._contentHeight);
+    this._pos = createPosition(this._center, this._zoom, this._containerSize);
     this._lastTs = new Date().valueOf();
   }
 
@@ -67,34 +89,45 @@ export class ScrollController {
   }
 
   public onTouchStart(containerX: number, containerY: number): void {
-    console.log('onTouchStart');
-    this._isTouch = true;
-    this._touchX = containerX;
-    this._touchY = containerX;
-    this._touchInnerX = this._pos.left + containerX;
-    this._touchInnerY = this._pos.top + containerY;
+    const outerPos = new Vec2(containerX, containerY);
+    const innerPos = this._innerFromContainer(outerPos);
+    console.log('onTouchStart outer:', outerPos.toString(), 'inner:', innerPos.toString());
+    this._touch = innerPos;
   }
 
   public onTouchMove(containerX: number, containerY: number): void {
-    if (this._isTouch) {
-      const dx = containerX - this._touchX;
-      const dy = containerY - this._touchY;
-      this._x = this._touchInnerX - dx;
-      this._y = this._touchInnerY - dy;
+    if (this._touch) {
+      const outerPos = new Vec2(containerX, containerY);
+      const innerPos = this._innerFromContainer(outerPos);
+      this._center = this._touch.sub(outerPos.sub(this._containerSize.div2()).hadamard(this._zoom.inv()))
     }
   }
 
   public onTouchEnd(containerX: number, containerY: number): void {
-    if (this._isTouch) {
+    if (this._touch) {
       console.log('onTouchEnd');
-      this._isTouch = false;
+      this._touch = null;
     }    
   }
 
+  public onZoomIn(dZoom: number, containerX: number, containerY: number): void {
+    this._zoom = this._zoom.hadamard({x: 1.1, y:1});
+  }
+
+  public onZoomOut(dZoom: number, containerX: number, containerY: number): void {
+    this._zoom = this._zoom.hadamard({x: 1/1.1, y:1});
+  }
   // private section
   
   private _updatePosition() {
     const ts: number = new Date().valueOf();
-    this._pos = createPosition(this._x, this._y, this._containerWidth, this._contentHeight);
+    const newPos = createPosition(this._center, this._zoom, this._containerSize);;
+    if (newPos.left !== this._pos.left || newPos.top !== this._pos.top) {
+      this._pos = newPos;
+    }
+  }
+
+  private _innerFromContainer(outerPos: Vec2): Vec2 {
+    return outerPos.sub(this._containerSize.div2()).hadamard(this._zoom.inv()).add(this._center);
   }
 }

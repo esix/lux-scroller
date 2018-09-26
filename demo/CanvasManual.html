@@ -17,22 +17,36 @@
 </head>
 <body>
 
-  <canvas id="canvas" width="500" height="500" ></canvas>
+  <canvas id="canvas" width="490" height="490" ></canvas>
 
   <script>
     require(['../dist/index'], function (scroller) {
-      var scrollController = new scroller.ScrollController({
-        containerWidth: 500,
-        containerHeight: 500,
-        contentWidth: 2500,
-        contentHeight: 2500,
-      });
-
       var canvas = document.getElementById('canvas');
+
+      var CONTENT_WIDTH = 2500;
+      var CONTENT_HEIGHT = 2500;
+      var I_CELL_SIZE = 100;
+
+      var scrollController = new scroller.ScrollController({
+        containerWidth: canvas.width,
+        containerHeight: canvas.height,
+        contentWidth: CONTENT_WIDTH,
+        contentHeight: CONTENT_HEIGHT,
+      });
 
       // install events
       canvas.addEventListener('mousedown', function (event) {
         scrollController.onTouchStart(event.offsetX, event.offsetY);
+      });
+      canvas.addEventListener('mouseout', function (event) {
+        scrollController.onTouchEnd(event.offsetX, event.offsetY);
+      });
+      canvas.addEventListener('wheel', function (event) {
+        if (event.deltaY > 0) {
+          scrollController.onZoomOut(event.deltaY, event.offsetX, event.offsetY);
+        } else if (event.deltaY < 0) {
+          scrollController.onZoomIn(-event.deltaY, event.offsetX, event.offsetY);
+        }
       });
       canvas.addEventListener('mousemove', function (event) {
         if (event.buttons && 1) {
@@ -46,27 +60,36 @@
       // render squares
       var ctx = canvas.getContext('2d');
 
-      function renderSquare(j, i, x, y, zoom, isFirst, isLast) {
+      function renderCell(x, y, width, height, isFirst, isLast, title) {
         ctx.lineWidth = 1;
 
+        // diagonal
         ctx.beginPath();
-        ctx.moveTo(x + 98, y);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + width - 1, y + height - 1);
+        ctx.strokeStyle = '#0000cc';
+        ctx.stroke();
+
+        // left border and top border
+        ctx.beginPath();
+        ctx.moveTo(x + width - 2, y);
         ctx.lineTo(x, y);
-        ctx.lineTo(x, y + 98);
+        ctx.lineTo(x, y + height - 2);
         ctx.strokeStyle = '#cccccc';
         ctx.stroke();
 
+        // left-top 
         ctx.beginPath();
-        ctx.moveTo(x + 10, y);
+        ctx.moveTo(x + width / 10, y);
         ctx.lineTo(x, y);
-        ctx.lineTo(x, y + 10);
+        ctx.lineTo(x, y + height / 10);
         ctx.strokeStyle = (isFirst || isLast) ? '#ff0000' : '#000000';
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.moveTo(x + 88, y + 98);
-        ctx.lineTo(x + 98, y + 98);
-        ctx.lineTo(x + 98, y + 88);
+        ctx.moveTo(x + width * 0.9, y + height - 1);
+        ctx.lineTo(x + width - 1, y + height - 1);
+        ctx.lineTo(x + width - 1, y + height * 0.9);
         ctx.strokeStyle = (isFirst || isLast) ? '#ff0000' : '#000000';
         ctx.stroke();
 
@@ -74,25 +97,29 @@
         ctx.textAlign = 'left';
         ctx.textBaseline = 'hanging';
         ctx.strokeStyle = '#000000';
-        ctx.strokeText('(' + j + ', ' + i + ')', x + 10, y + 10);
+        ctx.strokeText(title, x + 10, y + 10);
       }
 
       function redraw(pos) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var zoomX = pos.zoomX;
+        var zoomY = pos.zoomY;
+        var oWidth = I_CELL_SIZE * zoomX;
+        var oHeight = I_CELL_SIZE * zoomY;
 
-        // find squares to draw:        
+        // find cells to draw:        
         var iMin = Math.max(0, Math.floor(pos.top / 100));                    // min visible y-index
         var iMax = Math.min(25, Math.ceil((pos.top + pos.height) / 100));     // max visible y-index (first invisible)
-        var jMin = Math.max(0, Math.floor(pos.left / 100));                   // min visible x-index
-        var jMax = Math.min(25, Math.ceil((pos.left + pos.width) / 100));     // max visible x-index (first invisible)
+        var jMin = Math.max(0, Math.floor(pos.left / 100));                  // min visible x-index
+        var jMax = Math.min(25, Math.ceil((pos.left + pos.width) / 100));    // max visible x-index (first invisible)
 
         for(var i = iMin; i < iMax; i++) {
           for(var j = jMin; j < jMax; j++) {
-            var y = i * 100 - pos.top;
-            var x = j * 100 - pos.left;
+            var y = (i * I_CELL_SIZE - pos.top) * zoomY;
+            var x = (j * I_CELL_SIZE - pos.left) * zoomX;
             var isFirst = (i === iMin && j === jMin);
             var isLast = (i === iMax - 1 && j === jMax - 1);
-            renderSquare(j, i, x, y, 1, isFirst, isLast);
+            renderCell(x, y, oWidth, oHeight, isFirst, isLast, '(' + j + ', ' + i + ')');
           }
         }
       }
@@ -104,9 +131,10 @@
 
         if (prevPos !== pos) {
           prevPos = pos;
+          console.log(pos);
           redraw(pos);
         }
-      }, 25);
+      }, 55);
 
 
     });
