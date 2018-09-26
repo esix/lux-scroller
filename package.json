@@ -1,13 +1,13 @@
 {
-  "name": "lux-scroller",
-  "version": "0.0.1",
-  "description": "Pure scroller",
+  "name": "scrollnik",
+  "version": "1.0.0",
+  "description": "Pure scroller library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "esix <esix@live.ru>",
   "repository": {
     "type": "git",
-    "url": "git://github.com/luxms/lux-scroller"
+    "url": "git://github.com/luxms/scrollnik"
   },
   "license": "MIT",
   "keywords": [
