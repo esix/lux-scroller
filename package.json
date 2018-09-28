@@ -1,5 +1,5 @@
 {
-  "name": "scrollnik",
+  "name": "scrolinka",
   "version": "1.0.0",
   "description": "Pure scroller library",
   "main": "dist/index.js",
@@ -7,11 +7,12 @@
   "author": "esix <esix@live.ru>",
   "repository": {
     "type": "git",
-    "url": "git://github.com/luxms/scrollnik"
+    "url": "git://github.com/luxms/scrolinka"
   },
   "license": "MIT",
   "keywords": [
     "scroller",
+    "scrolinka",
     "animation",
     "mobile"
   ],
