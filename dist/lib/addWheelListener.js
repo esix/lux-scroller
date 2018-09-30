@@ -57,3 +57,4 @@
         }, useCapture || false);
     }
 })(window, document);
+//# sourceMappingURL=addWheelListener.js.map

@@ -35,6 +35,6 @@ export declare class ScrollController {
     onTouchEnd(containerX: number, containerY: number): void;
     onZoomIn(dZoom: number, containerX: number, containerY: number): void;
     onZoomOut(dZoom: number, containerX: number, containerY: number): void;
-    private _updatePosition();
-    private _innerFromContainer(outerPos);
+    private _updatePosition;
+    private _innerFromContainer;
 }

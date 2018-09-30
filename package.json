@@ -2,8 +2,12 @@
   "name": "scrolinka",
   "version": "1.0.0",
   "description": "Pure scroller library",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/scrolinka.umd.js",
+  "module": "dist/scrolinka.es5.js",
+  "typings": "dist/types/scrolinka.d.ts",
+  "files": [
+    "dist"
+  ],
   "author": "esix <esix@live.ru>",
   "repository": {
     "type": "git",
@@ -16,12 +20,48 @@
     "animation",
     "mobile"
   ],
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "scripts": {
-    "build": "tsc",
+    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "prebuild": "rimraf dist",
+    "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
+    "start": "rollup -c rollup.config.ts -w",
     "prepublish": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
+    "deploy-docs": "ts-node tools/gh-pages-publish",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
+    "commit": "git-cz",
+    "semantic-release": "semantic-release",
+    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "devDependencies": {
+    "@commitlint/cli": "^7.1.2",
+    "@commitlint/config-conventional": "^7.1.2",
+    "@types/jest": "^23.3.2",
+    "@types/node": "^10.11.3",
+    "lodash.camelcase": "^4.3.0",
+    "prettier": "^1.14.3",
+    "prompt": "^1.0.0",
+    "replace-in-file": "^3.4.2",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.66.2",
+    "rollup-plugin-commonjs": "^9.1.8",
+    "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript2": "^0.17.0",
+    "typedoc": "^0.12.0",
     "typescript": "^3.0.3"
   }
 }
