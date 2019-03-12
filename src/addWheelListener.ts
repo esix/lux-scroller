@@ -18,7 +18,7 @@
 
   // detect available wheel event
   support = "onwheel" in document.createElement("div") ? "wheel" : // Modern browsers support "wheel"
-            document.onmousewheel !== undefined ? "mousewheel" : // Webkit and IE support at least "mousewheel"
+    (document as any).onmousewheel !== undefined ? "mousewheel" : // Webkit and IE support at least "mousewheel"
             "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
 
   global.addWheelListener = function(elem: any, callback: any, useCapture: boolean) {

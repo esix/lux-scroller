@@ -20,8 +20,10 @@
   <canvas id="canvas" width="490" height="490" ></canvas>
 
   <script>
-    require(['../dist/index'], function (scroller) {
-      var canvas = document.getElementById('canvas');
+    var canvas = document.getElementById('canvas');
+    var g_ctx = canvas.getContext('2d');
+
+    require(['../dist/scrolinka.umd'], function (scroller) {
 
       var CONTENT_WIDTH = 2500;
       var CONTENT_HEIGHT = 2500;
@@ -57,10 +59,7 @@
       });
 
 
-      // render squares
-      var ctx = canvas.getContext('2d');
-
-      function renderCell(x, y, width, height, isFirst, isLast, title) {
+      function renderCell(ctx, x, y, width, height, isFirst, isLast, title) {
         ctx.lineWidth = 1;
 
         // diagonal
@@ -101,7 +100,15 @@
       }
 
       function redraw(pos) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var width = canvas.width;
+        var height = canvas.height;
+
+        var offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.width = width;
+        offscreenCanvas.height = height;
+        var ctx = offscreenCanvas.getContext('2d');
+
+        ctx.clearRect(0, 0, width, height);
         var zoomX = pos.zoomX;
         var zoomY = pos.zoomY;
         var oWidth = I_CELL_SIZE * zoomX;
@@ -119,24 +126,34 @@
             var x = (j * I_CELL_SIZE - pos.left) * zoomX;
             var isFirst = (i === iMin && j === jMin);
             var isLast = (i === iMax - 1 && j === jMax - 1);
-            renderCell(x, y, oWidth, oHeight, isFirst, isLast, '(' + j + ', ' + i + ')');
+            renderCell(ctx, x, y, oWidth, oHeight, isFirst, isLast, '(' + j + ', ' + i + ')');
           }
         }
+
+        var image = ctx.getImageData(0, 0, width, height);
+        g_ctx.putImageData(image, 0, 0);
       }
 
       // update position
       var prevPos = null;
-      window.setInterval(function() {
-        var pos = scrollController.getPosition();
 
-        if (prevPos !== pos) {
-          prevPos = pos;
-          console.log(pos);
-          redraw(pos);
+      function step() {
+        try {
+          var pos = scrollController.getPosition();
+
+          if (prevPos !== pos) {
+            prevPos = pos;
+            console.log(pos);
+            redraw(pos);
+          }
+        } catch (err) {
+          console.error(err);
         }
-      }, 55);
 
+        window.requestAnimationFrame(step);
+      }
 
+      window.requestAnimationFrame(step);
     });
   </script>
 </body>
